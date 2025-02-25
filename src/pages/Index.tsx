@@ -670,5 +670,4 @@ const Index = () => {
                         { name: "Cenang Bay Villas", location: "Pantai Cenang", rooms: 84, category: "4-Star", status: "Planning", completion: "Q1 2025" },
                         { name: "The Orient Langkawi", location: "Kuah", rooms: 156, category: "5-Star", status: "Construction", completion: "Q4 2024" },
                         { name: "Rainforest Retreat", location: "Gunung Raya", rooms: 42, category: "Boutique", status: "Completed", completion: "Q4 2023" },
-                      ].map((item, index) => (
-                        <tr key={index}
+                      
