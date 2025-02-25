@@ -9,7 +9,297 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      accommodation_areas: {
+        Row: {
+          area: string
+          hotels: number
+          id: string
+          occupancy_rate: number
+        }
+        Insert: {
+          area: string
+          hotels: number
+          id?: string
+          occupancy_rate: number
+        }
+        Update: {
+          area?: string
+          hotels?: number
+          id?: string
+          occupancy_rate?: number
+        }
+        Relationships: []
+      }
+      accommodation_types: {
+        Row: {
+          id: string
+          percentage: number
+          type: string
+        }
+        Insert: {
+          id?: string
+          percentage: number
+          type: string
+        }
+        Update: {
+          id?: string
+          percentage?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      age_demographics: {
+        Row: {
+          age_group: string
+          id: string
+          percentage: number
+        }
+        Insert: {
+          age_group: string
+          id?: string
+          percentage: number
+        }
+        Update: {
+          age_group?: string
+          id?: string
+          percentage?: number
+        }
+        Relationships: []
+      }
+      attractions: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          latitude: number
+          location: string
+          longitude: number
+          name: string
+          visitor_count: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          latitude: number
+          location: string
+          longitude: number
+          name: string
+          visitor_count: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number
+          location?: string
+          longitude?: number
+          name?: string
+          visitor_count?: number
+        }
+        Relationships: []
+      }
+      countries: {
+        Row: {
+          change: string
+          id: string
+          name: string
+          percentage: number
+          visitors: number
+          year: number
+        }
+        Insert: {
+          change: string
+          id?: string
+          name: string
+          percentage: number
+          visitors: number
+          year: number
+        }
+        Update: {
+          change?: string
+          id?: string
+          name?: string
+          percentage?: number
+          visitors?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      entry_points: {
+        Row: {
+          count: number
+          id: string
+          percentage: number
+          type: string
+        }
+        Insert: {
+          count: number
+          id?: string
+          percentage: number
+          type: string
+        }
+        Update: {
+          count?: number
+          id?: string
+          percentage?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      gender_demographics: {
+        Row: {
+          gender: string
+          id: string
+          percentage: number
+        }
+        Insert: {
+          gender: string
+          id?: string
+          percentage: number
+        }
+        Update: {
+          gender?: string
+          id?: string
+          percentage?: number
+        }
+        Relationships: []
+      }
+      hotel_categories: {
+        Row: {
+          category: string
+          hotels: number
+          id: string
+          rate: number
+          rooms: number
+        }
+        Insert: {
+          category: string
+          hotels: number
+          id?: string
+          rate: number
+          rooms: number
+        }
+        Update: {
+          category?: string
+          hotels?: number
+          id?: string
+          rate?: number
+          rooms?: number
+        }
+        Relationships: []
+      }
+      hotel_developments: {
+        Row: {
+          category: string
+          completion: string
+          id: string
+          location: string
+          name: string
+          rooms: number
+          status: string
+        }
+        Insert: {
+          category: string
+          completion: string
+          id?: string
+          location: string
+          name: string
+          rooms: number
+          status: string
+        }
+        Update: {
+          category?: string
+          completion?: string
+          id?: string
+          location?: string
+          name?: string
+          rooms?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      occupancy_rates: {
+        Row: {
+          created_at: string | null
+          id: string
+          month: number
+          rate: number
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          month: number
+          rate: number
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          month?: number
+          rate?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      tourist_spending: {
+        Row: {
+          average_spending: number
+          created_at: string | null
+          id: string
+          month: number
+          year: number
+        }
+        Insert: {
+          average_spending: number
+          created_at?: string | null
+          id?: string
+          month: number
+          year: number
+        }
+        Update: {
+          average_spending?: number
+          created_at?: string | null
+          id?: string
+          month?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      visitors: {
+        Row: {
+          created_at: string | null
+          domestic_count: number
+          id: string
+          international_count: number
+          month: number
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          domestic_count: number
+          id?: string
+          international_count: number
+          month: number
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          domestic_count?: number
+          id?: string
+          international_count?: number
+          month?: number
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
