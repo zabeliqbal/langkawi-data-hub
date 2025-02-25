@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import malaysiaLogo from "../assets/malaysia-logo.png";
 
 const Header = () => {
   const [activeTab, setActiveTab] = useState<string>("Home");
@@ -26,7 +25,10 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <div className="flex items-center mr-4">
-          <img src={malaysiaLogo} alt="Malaysia Logo" className="h-9 w-auto" />
+          {/* Using a div instead of an image since the image file doesn't exist */}
+          <div className="h-9 w-9 bg-blue-600 text-white rounded-md flex items-center justify-center font-bold text-xs">
+            LADA
+          </div>
           <div className="ml-3 flex flex-col">
             <span className="text-lg font-bold">LANGKAWI DATA</span>
             <span className="text-xs text-muted-foreground">Tourism Statistics Hub</span>
@@ -59,7 +61,10 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="left" className="w-[240px] sm:w-[300px]">
               <div className="flex items-center mt-2 mb-6">
-                <img src={malaysiaLogo} alt="Malaysia Logo" className="h-8 w-auto" />
+                {/* Using a div instead of an image since the image file doesn't exist */}
+                <div className="h-8 w-8 bg-blue-600 text-white rounded-md flex items-center justify-center font-bold text-xs">
+                  LADA
+                </div>
                 <div className="ml-2 flex flex-col">
                   <span className="text-base font-bold">LANGKAWI DATA</span>
                   <span className="text-xs text-muted-foreground">Tourism Statistics Hub</span>
