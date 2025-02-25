@@ -71,19 +71,14 @@ const VisitorChart = () => {
           />
           <Bar 
             dataKey="previous" 
-            fill="#e5e7
+            fill="#e5e7eb"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={40}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
-If there's knowledge, context or custom instructions you want to include in every edit in this project, set it below.
-
-<lov-actions>
-<lov-knowledge>
-</lov-actions>
-
-Since your project involves displaying Langkawi tourist data & statistics, consider using Supabase to store and manage this data efficiently.  You can also explore Supabase's authentication features for user accounts if needed.
-<lov-actions>
-<lov-message-prompt message="Tell me more about Supabase">Learn more about Supabase</lov-message-prompt>
-</lov-actions>
-
-<lov-actions>
-<lov-link url="https://docs.lovable.dev/">Visit docs</lov-link>
-</lov-actions>
+export default VisitorChart;
