@@ -173,12 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       console.log('Signing out...');
-      // First clear our local state
-      setUser(null);
-      setSession(null);
-      setIsAdmin(false);
       
-      // Then sign out from Supabase
+      // Call Supabase signOut first to clear the token and session
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -191,6 +187,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
+      // Clear our local state after successful Supabase signOut
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      
       console.log('Successfully signed out');
       
       toast({
@@ -198,8 +199,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: 'You have been successfully signed out.',
       });
       
-      // Navigate to auth page after successful sign out
-      navigate('/auth', { replace: true });
+      // Force a redirect to the auth page
+      window.location.href = '/auth';
     } catch (error) {
       console.error('Sign out error:', error);
       toast({

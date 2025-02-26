@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -11,6 +11,19 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If not loading and we have determined there's no user, redirect
+    if (!loading && !user) {
+      navigate('/auth', { replace: true });
+    }
+    
+    // If requiring admin and user is not admin, redirect
+    if (!loading && adminOnly && !isAdmin) {
+      navigate('/', { replace: true });
+    }
+  }, [user, loading, isAdmin, adminOnly, navigate]);
 
   if (loading) {
     return (
