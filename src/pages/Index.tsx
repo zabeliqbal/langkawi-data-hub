@@ -314,7 +314,7 @@ const Index = () => {
                               <div 
                                 className={`h-full rounded-full ${item.color}`}
                                 style={{ width: `${item.percentage}%` }}
-                              />
+                              ></div>
                             </div>
                           </div>
                         ))}
@@ -413,7 +413,7 @@ const Index = () => {
                         <div 
                           className="h-full rounded-full bg-blue-500"
                           style={{ width: "61%" }}
-                        />
+                        ></div>
                       </div>
                       <div className="text-xs text-center text-muted-foreground">61% of total visitors</div>
                     </div>
@@ -432,7 +432,7 @@ const Index = () => {
                         <div 
                           className="h-full rounded-full bg-green-500"
                           style={{ width: "37.5%" }}
-                        />
+                        ></div>
                       </div>
                       <div className="text-xs text-center text-muted-foreground">37.5% of total visitors</div>
                     </div>
@@ -451,7 +451,7 @@ const Index = () => {
                         <div 
                           className="h-full rounded-full bg-purple-500"
                           style={{ width: "1.5%" }}
-                        />
+                        ></div>
                       </div>
                       <div className="text-xs text-center text-muted-foreground">1.5% of total visitors</div>
                     </div>
@@ -570,7 +570,7 @@ const Index = () => {
                           <div 
                             className={`h-full rounded-full ${item.color}`}
                             style={{ width: `${(item.rooms / 7856) * 100}%` }}
-                          />
+                          ></div>
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
                           <span>{item.hotels} properties</span>
@@ -631,7 +631,7 @@ const Index = () => {
                                     "bg-orange-500"
                                   }`}
                                   style={{ width: `${item.percentage}%` }}
-                                />
+                                ></div>
                               </div>
                               <div className="text-xs text-right mt-1">{item.percentage}%</div>
                             </div>
@@ -671,4 +671,143 @@ const Index = () => {
                         { name: "The Orient Langkawi", location: "Kuah", rooms: 156, category: "5-Star", status: "Construction", completion: "Q4 2024" },
                         { name: "Rainforest Retreat", location: "Gunung Raya", rooms: 42, category: "Boutique", status: "Completed", completion: "Q4 2023" },
                       ].map((item, index) => (
-                        <tr key={index} className={index %
+                        <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                          <td className="px-6 py-4 font-medium">{item.name}</td>
+                          <td className="px-6 py-4">{item.location}</td>
+                          <td className="px-6 py-4">{item.rooms}</td>
+                          <td className="px-6 py-4">{item.category}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              item.status === "Completed" ? "bg-green-100 text-green-800" :
+                              item.status === "Construction" ? "bg-blue-100 text-blue-800" :
+                              "bg-amber-100 text-amber-800"
+                            }`}>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">{item.completion}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="spending" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Tourist Spending</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <DownloadCloud className="h-4 w-4" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Avg. Spending Per Tourist</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-end justify-between">
+                    <div className="text-3xl font-bold">MYR 3,542</div>
+                    <Badge className="bg-green-100 text-green-700">
+                      <ArrowUpRight className="mr-1 h-3 w-3" /> 
+                      +8.3%
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Increased from MYR 3,270 in 2022</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Tourism Revenue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-end justify-between">
+                    <div className="text-3xl font-bold">MYR 14.9B</div>
+                    <Badge className="bg-green-100 text-green-700">
+                      <ArrowUpRight className="mr-1 h-3 w-3" /> 
+                      +21.8%
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Up from MYR 12.2B in 2022</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Daily Spending Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-end justify-between">
+                    <div className="text-3xl font-bold">MYR 932</div>
+                    <Badge className="bg-green-100 text-green-700">
+                      <ArrowUpRight className="mr-1 h-3 w-3" /> 
+                      +4.6%
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Per tourist per day</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Spending Patterns (2023)</CardTitle>
+                <CardDescription>
+                  Tourist spending by category
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[350px]">
+                  <SpendingChart />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="attractions" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Top Attractions</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <DownloadCloud className="h-4 w-4" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Popular Destinations Map</CardTitle>
+                <CardDescription>
+                  Most visited attractions in Langkawi
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[500px]">
+                  <AttractionMap />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+};
+
+export default Index;
