@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -16,6 +16,7 @@ import { User, LogOut, Settings, UserCircle } from "lucide-react";
 
 const Header = () => {
   const { user, signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   // Function to get user initials for the avatar
   const getUserInitials = () => {
@@ -57,12 +58,12 @@ const Header = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
                 {isAdmin && (
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Admin Dashboard</span>
                   </DropdownMenuItem>
