@@ -9,7 +9,207 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      attractions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          location_lat: number | null
+          location_lng: number | null
+          name: string
+          rating: number | null
+          updated_at: string | null
+          visitors_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          name: string
+          rating?: number | null
+          updated_at?: string | null
+          visitors_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          name?: string
+          rating?: number | null
+          updated_at?: string | null
+          visitors_count?: number | null
+        }
+        Relationships: []
+      }
+      occupancy_rates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          month: string
+          rate: number
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          month: string
+          rate: number
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          month?: string
+          rate?: number
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
+      origin_countries: {
+        Row: {
+          color: string | null
+          country_name: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          percentage: number
+          updated_at: string | null
+          visitor_count: number
+          year: number
+        }
+        Insert: {
+          color?: string | null
+          country_name: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          percentage: number
+          updated_at?: string | null
+          visitor_count: number
+          year: number
+        }
+        Update: {
+          color?: string | null
+          country_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          percentage?: number
+          updated_at?: string | null
+          visitor_count?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
+      tourist_spending: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          month: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          month: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          month?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
+      visitor_stats: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          domestic_visitors: number
+          id: string
+          international_visitors: number
+          month: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          domestic_visitors: number
+          id?: string
+          international_visitors: number
+          month: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          domestic_visitors?: number
+          id?: string
+          international_visitors?: number
+          month?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
