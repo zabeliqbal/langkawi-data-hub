@@ -13,6 +13,7 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<{ error: any | null }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
+  refreshUserRole: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +25,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        setIsAdmin(false);
+      } else {
+        console.log('User role data:', data);
+        setIsAdmin(data?.role === 'admin');
+      }
+    } catch (error) {
+      console.error('Error in fetchUserRole:', error);
+      setIsAdmin(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshUserRole = async () => {
+    if (user) {
+      setLoading(true);
+      await fetchUserRole(user.id);
+      toast({
+        title: 'Refreshed user permissions',
+        description: 'Your user permissions have been updated.',
+      });
+    }
+  };
 
   useEffect(() => {
     // Get session on component mount
@@ -58,28 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-  async function fetchUserRole(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user role:', error);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(data?.role === 'admin');
-      }
-    } catch (error) {
-      console.error('Error in fetchUserRole:', error);
-      setIsAdmin(false);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
@@ -134,6 +147,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
+      // Fetch user role after successful login
+      if (data.user) {
+        await fetchUserRole(data.user.id);
+      }
+
       toast({
         title: 'Sign in successful',
         description: `Welcome back${data.user?.user_metadata?.full_name ? ', ' + data.user.user_metadata.full_name : ''}!`,
@@ -179,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         isAdmin,
+        refreshUserRole,
       }}
     >
       {children}
