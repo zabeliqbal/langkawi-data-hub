@@ -85,7 +85,7 @@ export async function getFlightArrivals() {
     .from('flight_arrivals')
     .select('*')
     .order('date', { ascending: false })
-    .order('arrival_time', { ascending: true });
+    .order('scheduled_time', { ascending: true });
   
   if (error) {
     console.error('Error fetching flight arrivals:', error);
