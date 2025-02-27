@@ -79,6 +79,22 @@ export async function getAttractions() {
   return data;
 }
 
+// Flight Arrivals
+export async function getFlightArrivals() {
+  const { data, error } = await supabase
+    .from('flight_arrivals')
+    .select('*')
+    .order('date', { ascending: false })
+    .order('arrival_time', { ascending: true });
+  
+  if (error) {
+    console.error('Error fetching flight arrivals:', error);
+    throw error;
+  }
+  
+  return data;
+}
+
 // For admin operations
 export async function addVisitorStat(visitorStat: any) {
   const { data, error } = await supabase

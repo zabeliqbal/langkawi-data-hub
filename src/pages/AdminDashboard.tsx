@@ -9,6 +9,7 @@ import OriginCountriesManager from '@/components/admin/OriginCountriesManager';
 import OccupancyRatesManager from '@/components/admin/OccupancyRatesManager';
 import TouristSpendingManager from '@/components/admin/TouristSpendingManager';
 import AttractionsManager from '@/components/admin/AttractionsManager';
+import FlightArrivalManager from '@/components/admin/FlightArrivalManager';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { RefreshCw } from 'lucide-react';
@@ -79,12 +80,13 @@ const AdminDashboard = () => {
           onValueChange={setActiveTab} 
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="visitor-stats">Visitor Stats</TabsTrigger>
             <TabsTrigger value="origin-countries">Origin Countries</TabsTrigger>
             <TabsTrigger value="occupancy-rates">Occupancy Rates</TabsTrigger>
             <TabsTrigger value="tourist-spending">Tourist Spending</TabsTrigger>
             <TabsTrigger value="attractions">Attractions</TabsTrigger>
+            <TabsTrigger value="flight-arrival">Flight Arrival</TabsTrigger>
           </TabsList>
           
           <TabsContent value="visitor-stats">
@@ -105,6 +107,10 @@ const AdminDashboard = () => {
           
           <TabsContent value="attractions">
             <AttractionsManager />
+          </TabsContent>
+          
+          <TabsContent value="flight-arrival">
+            <FlightArrivalManager />
           </TabsContent>
         </Tabs>
       </div>
