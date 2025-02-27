@@ -8,17 +8,8 @@ import {
   Legend,
   Tooltip
 } from "recharts";
-
-const data = [
-  { country: "Malaysia", value: 42 },
-  { country: "China", value: 18 },
-  { country: "Singapore", value: 12 },
-  { country: "Thailand", value: 8 },
-  { country: "United Kingdom", value: 6 },
-  { country: "Australia", value: 5 },
-  { country: "India", value: 4 },
-  { country: "Others", value: 5 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { getOriginCountries } from "@/services/api";
 
 const COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#6366f1", "#ec4899", "#94a3b8"];
 
@@ -34,12 +25,32 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const OriginChart = () => {
+  const { data: originCountries, isLoading, error } = useQuery({
+    queryKey: ['originCountries'],
+    queryFn: getOriginCountries
+  });
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-[300px]">Loading origin data...</div>;
+  }
+
+  if (error || !originCountries) {
+    return <div className="flex justify-center items-center h-[300px]">Error loading origin data</div>;
+  }
+
+  // Format the data for the chart
+  const chartData = originCountries.map(country => ({
+    country: country.country_name,
+    value: country.percentage,
+    color: country.color
+  }));
+
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
@@ -48,8 +59,11 @@ const OriginChart = () => {
             dataKey="value"
             nameKey="country"
           >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {chartData.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={entry.color || COLORS[index % COLORS.length]} 
+              />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />

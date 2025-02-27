@@ -1,20 +1,28 @@
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getAttractions } from "@/services/api";
 
 // Mock component for Attraction Map
 // In a real implementation, you would use a mapping library like react-leaflet or react-map-gl
 const AttractionMap = () => {
-  // These would be actual attractions with their coordinates
-  const attractions = [
-    { name: "Langkawi Cable Car", visitors: 2800, popularity: 95 },
-    { name: "Langkawi Sky Bridge", visitors: 2400, popularity: 92 },
-    { name: "Cenang Beach", visitors: 3200, popularity: 90 },
-    { name: "Underwater World Langkawi", visitors: 1900, popularity: 85 },
-    { name: "Kilim Karst Geoforest Park", visitors: 1600, popularity: 88 },
-    { name: "Tanjung Rhu Beach", visitors: 1400, popularity: 82 },
-    { name: "Mahsuri's Tomb", visitors: 1200, popularity: 75 },
-    { name: "Telaga Tujuh Waterfalls", visitors: 950, popularity: 78 },
-  ];
+  const { data: attractions, isLoading, error } = useQuery({
+    queryKey: ['attractions'],
+    queryFn: getAttractions
+  });
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-[400px]">Loading attractions data...</div>;
+  }
+
+  if (error || !attractions) {
+    return <div className="flex justify-center items-center h-[400px]">Error loading attractions data</div>;
+  }
+
+  // Sort attractions by visitor count
+  const sortedAttractions = [...attractions].sort((a, b) => 
+    (b.visitors_count || 0) - (a.visitors_count || 0)
+  ).slice(0, 8); // Top 8 attractions
 
   return (
     <div className="rounded-lg border border-gray-200 overflow-hidden h-[400px] relative">
@@ -26,7 +34,7 @@ const AttractionMap = () => {
           </p>
           <div className="grid gap-3 text-sm">
             <div className="font-medium mb-2">Top Attractions by Daily Visitors:</div>
-            {attractions.map((attraction, index) => (
+            {sortedAttractions.map((attraction, index) => (
               <div key={index} className="flex justify-between items-center border-b pb-2">
                 <div className="flex items-center">
                   <div className={`w-2 h-2 rounded-full mr-2 ${
@@ -37,7 +45,7 @@ const AttractionMap = () => {
                   }`}></div>
                   <span>{attraction.name}</span>
                 </div>
-                <div className="font-medium">{attraction.visitors} / day</div>
+                <div className="font-medium">{attraction.visitors_count?.toLocaleString() || 0} visitors</div>
               </div>
             ))}
           </div>

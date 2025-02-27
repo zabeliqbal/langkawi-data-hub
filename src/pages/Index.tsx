@@ -19,15 +19,49 @@ import OccupancyChart from "@/components/OccupancyChart";
 import SpendingChart from "@/components/SpendingChart";
 import AttractionMap from "@/components/AttractionMap";
 import StatsGrid from "@/components/StatsGrid";
-import Header from "@/components/Header";
+import { useQuery } from "@tanstack/react-query";
+import { getVisitorStats, getOriginCountries, getOccupancyRates, getAttractions } from "@/services/api";
 
 const Index = () => {
   const [timeFilter, setTimeFilter] = useState<string>("6months");
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  
+  const { data: visitorStats } = useQuery({
+    queryKey: ['visitorStats'],
+    queryFn: getVisitorStats
+  });
+
+  const calculateYearlyTotals = () => {
+    if (!visitorStats) return { total: 0, international: 0, domestic: 0, internationalPercent: 0, domesticPercent: 0 };
+
+    const currentYear = new Date().getFullYear();
+    const yearData = visitorStats.filter(stat => stat.year === currentYear);
+    
+    const total = yearData.reduce((sum, stat) => 
+      sum + stat.domestic_visitors + stat.international_visitors, 0);
+    
+    const international = yearData.reduce((sum, stat) => 
+      sum + stat.international_visitors, 0);
+    
+    const domestic = yearData.reduce((sum, stat) => 
+      sum + stat.domestic_visitors, 0);
+
+    const internationalPercent = total > 0 ? (international / total) * 100 : 0;
+    const domesticPercent = total > 0 ? (domestic / total) * 100 : 0;
+
+    return {
+      total,
+      international,
+      domestic,
+      internationalPercent,
+      domesticPercent
+    };
+  };
+
+  const visitorTotals = calculateYearlyTotals();
   
   return (
     <div className="min-h-screen bg-gray-50/50 flex flex-col">
-      <Header />
-      
       <main className="flex-1 container mx-auto px-4 py-6 md:px-6 md:py-8">
         <div className="flex flex-col gap-2 mb-8">
           <div className="flex items-center justify-between">
@@ -97,7 +131,7 @@ const Index = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="overview" className="mb-8">
+        <Tabs defaultValue="overview" className="mb-8" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:w-[600px] mb-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="visitors">Visitors</TabsTrigger>
@@ -220,17 +254,17 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Visitors (2023)</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Visitors ({new Date().getFullYear()})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end justify-between">
-                    <div className="text-3xl font-bold">4,218,503</div>
+                    <div className="text-3xl font-bold">{visitorTotals.total.toLocaleString()}</div>
                     <Badge className="bg-green-100 text-green-700">
                       <ArrowUpRight className="mr-1 h-3 w-3" /> 
                       +12.4%
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">Compared to 3,751,982 visitors in 2022</p>
+                  <p className="text-xs text-muted-foreground mt-2">Current year statistics</p>
                 </CardContent>
               </Card>
               
@@ -240,13 +274,13 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end justify-between">
-                    <div className="text-3xl font-bold">1,845,129</div>
+                    <div className="text-3xl font-bold">{visitorTotals.international.toLocaleString()}</div>
                     <Badge className="bg-green-100 text-green-700">
                       <ArrowUpRight className="mr-1 h-3 w-3" /> 
                       +23.8%
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">43.7% of total visitors</p>
+                  <p className="text-xs text-muted-foreground mt-2">{visitorTotals.internationalPercent.toFixed(1)}% of total visitors</p>
                 </CardContent>
               </Card>
               
@@ -256,13 +290,13 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end justify-between">
-                    <div className="text-3xl font-bold">2,373,374</div>
+                    <div className="text-3xl font-bold">{visitorTotals.domestic.toLocaleString()}</div>
                     <Badge className="bg-green-100 text-green-700">
                       <ArrowUpRight className="mr-1 h-3 w-3" /> 
                       +5.2%
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">56.3% of total visitors</p>
+                  <p className="text-xs text-muted-foreground mt-2">{visitorTotals.domesticPercent.toFixed(1)}% of total visitors</p>
                 </CardContent>
               </Card>
             </div>
@@ -270,7 +304,7 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>Monthly Visitor Trends (2023)</CardTitle>
+                  <CardTitle>Monthly Visitor Trends ({new Date().getFullYear()})</CardTitle>
                   <CardDescription>
                     Monthly breakdown of international vs. domestic visitors
                   </CardDescription>
@@ -359,32 +393,32 @@ const Index = () => {
                     
                     <div className="space-y-4">
                       <div className="text-sm font-medium">Top 5 Countries</div>
-                      {[
-                        { country: "China", visitors: 425680, change: "+42%" },
-                        { country: "Singapore", visitors: 287305, change: "+18%" },
-                        { country: "Thailand", visitors: 164820, change: "+15%" },
-                        { country: "United Kingdom", visitors: 134520, change: "+22%" },
-                        { country: "Australia", visitors: 95460, change: "+28%" },
-                      ].map((item, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className={`h-3 w-3 rounded-full ${
-                              index === 0 ? "bg-blue-500" :
-                              index === 1 ? "bg-green-500" :
-                              index === 2 ? "bg-purple-500" :
-                              index === 3 ? "bg-orange-500" :
-                              "bg-red-500"
-                            } mr-2`}></div>
-                            <span>{item.country}</span>
+                      <div className="space-y-3">
+                        {useQuery({
+                          queryKey: ['originCountries'],
+                          queryFn: getOriginCountries,
+                          select: (data) => data.slice(0, 5),
+                        }).data?.map((country, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className={`h-3 w-3 rounded-full ${
+                                index === 0 ? "bg-blue-500" :
+                                index === 1 ? "bg-green-500" :
+                                index === 2 ? "bg-purple-500" :
+                                index === 3 ? "bg-orange-500" :
+                                "bg-red-500"
+                              } mr-2`}></div>
+                              <span>{country.country_name}</span>
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <span className="font-medium mr-2">{country.visitor_count.toLocaleString()}</span>
+                              <Badge className="bg-green-100 text-green-700 text-xs">
+                                {`${country.percentage}%`}
+                              </Badge>
+                            </div>
                           </div>
-                          <div className="flex items-center text-sm">
-                            <span className="font-medium mr-2">{item.visitors.toLocaleString()}</span>
-                            <Badge className="bg-green-100 text-green-700 text-xs">
-                              {item.change}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -483,13 +517,23 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end justify-between">
-                    <div className="text-3xl font-bold">76.3%</div>
+                    <div className="text-3xl font-bold">
+                      {useQuery({
+                        queryKey: ['occupancyRates'],
+                        queryFn: getOccupancyRates,
+                        select: (data) => {
+                          if (!data || data.length === 0) return "0%";
+                          const sum = data.reduce((acc, curr) => acc + curr.rate, 0);
+                          return `${(sum / data.length).toFixed(1)}%`;
+                        }
+                      }).data || "0%"}
+                    </div>
                     <Badge className="bg-green-100 text-green-700">
                       <ArrowUpRight className="mr-1 h-3 w-3" /> 
                       +5.8%
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">Up from 70.5% in 2022</p>
+                  <p className="text-xs text-muted-foreground mt-2">Current year average</p>
                 </CardContent>
               </Card>
               
@@ -529,7 +573,7 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>Monthly Occupancy Rates (2023)</CardTitle>
+                  <CardTitle>Monthly Occupancy Rates ({new Date().getFullYear()})</CardTitle>
                   <CardDescription>
                     Percentage of rooms occupied each month
                   </CardDescription>
@@ -717,13 +761,24 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end justify-between">
-                    <div className="text-3xl font-bold">MYR 3,542</div>
+                    <div className="text-3xl font-bold">
+                      {useQuery({
+                        queryKey: ['touristSpending'],
+                        queryFn: getTouristSpending,
+                        select: (data) => {
+                          const spendingData = data.filter(item => item.category === 'Overall');
+                          if (spendingData.length === 0) return "RM 0";
+                          const latest = spendingData[spendingData.length - 1];
+                          return `RM ${latest.amount}`;
+                        }
+                      }).data || "RM 0"}
+                    </div>
                     <Badge className="bg-green-100 text-green-700">
                       <ArrowUpRight className="mr-1 h-3 w-3" /> 
                       +8.3%
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">Increased from MYR 3,270 in 2022</p>
+                  <p className="text-xs text-muted-foreground mt-2">Per visitor average</p>
                 </CardContent>
               </Card>
               
@@ -739,7 +794,7 @@ const Index = () => {
                       +21.8%
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">Up from MYR 12.2B in 2022</p>
+                  <p className="text-xs text-muted-foreground mt-2">Annual projection</p>
                 </CardContent>
               </Card>
               
@@ -762,7 +817,7 @@ const Index = () => {
             
             <Card>
               <CardHeader>
-                <CardTitle>Spending Patterns (2023)</CardTitle>
+                <CardTitle>Spending Patterns ({new Date().getFullYear()})</CardTitle>
                 <CardDescription>
                   Tourist spending by category
                 </CardDescription>
@@ -803,6 +858,33 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {useQuery({
+                queryKey: ['attractions'],
+                queryFn: getAttractions,
+                select: (data) => data.slice(0, 6)
+              }).data?.map((attraction, index) => (
+                <Card key={index}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">{attraction.name}</CardTitle>
+                    <CardDescription>{attraction.description?.substring(0, 100)}...</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1 text-blue-500" />
+                        <span>{attraction.visitors_count?.toLocaleString() || 0} visitors</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-amber-500 mr-1">★</span>
+                        <span>{attraction.rating || "N/A"}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
         </Tabs>
       </main>

@@ -2,6 +2,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Calendar, Plane, CreditCard } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getVisitorStats, getOccupancyRates, getTouristSpending } from "@/services/api";
 
 type StatCardProps = {
   title: string;
@@ -33,20 +35,98 @@ const StatCard = ({ title, value, change, icon, positive = true }: StatCardProps
 );
 
 const StatsGrid = () => {
+  const { data: visitorStats } = useQuery({
+    queryKey: ['visitorStats'],
+    queryFn: getVisitorStats
+  });
+
+  const { data: occupancyRates } = useQuery({
+    queryKey: ['occupancyRates'],
+    queryFn: getOccupancyRates
+  });
+
+  const { data: touristSpending } = useQuery({
+    queryKey: ['touristSpending'],
+    queryFn: getTouristSpending
+  });
+
+  // Calculate statistics from data
+  const getCurrentVisitors = () => {
+    if (!visitorStats || visitorStats.length === 0) return "0";
+    
+    // Get the latest month's data
+    const latestMonth = visitorStats[visitorStats.length - 1];
+    return (latestMonth.domestic_visitors + latestMonth.international_visitors).toLocaleString();
+  };
+
+  const getVisitorChange = () => {
+    if (!visitorStats || visitorStats.length < 2) return "+0%";
+    
+    const current = visitorStats[visitorStats.length - 1];
+    const previous = visitorStats[visitorStats.length - 2];
+    
+    const currentTotal = current.domestic_visitors + current.international_visitors;
+    const previousTotal = previous.domestic_visitors + previous.international_visitors;
+    
+    const percentChange = ((currentTotal - previousTotal) / previousTotal) * 100;
+    
+    return `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}%`;
+  };
+
+  const getLatestOccupancy = () => {
+    if (!occupancyRates || occupancyRates.length === 0) return "0%";
+    
+    const latestRate = occupancyRates[occupancyRates.length - 1];
+    return `${latestRate.rate.toFixed(1)}%`;
+  };
+
+  const getOccupancyChange = () => {
+    if (!occupancyRates || occupancyRates.length < 2) return "+0%";
+    
+    const current = occupancyRates[occupancyRates.length - 1];
+    const previous = occupancyRates[occupancyRates.length - 2];
+    
+    const percentChange = current.rate - previous.rate;
+    
+    return `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}%`;
+  };
+
+  const getLatestSpending = () => {
+    if (!touristSpending || touristSpending.length === 0) return "RM 0";
+    
+    const spendingData = touristSpending.filter(item => item.category === 'Overall');
+    if (spendingData.length === 0) return "RM 0";
+    
+    const latestSpending = spendingData[spendingData.length - 1];
+    return `RM ${latestSpending.amount}`;
+  };
+
+  const getSpendingChange = () => {
+    const spendingData = touristSpending?.filter(item => item.category === 'Overall') || [];
+    if (spendingData.length < 2) return "+0%";
+    
+    const current = spendingData[spendingData.length - 1];
+    const previous = spendingData[spendingData.length - 2];
+    
+    const percentChange = ((current.amount - previous.amount) / previous.amount) * 100;
+    
+    return `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}%`;
+  };
+
   const stats = [
     { 
       title: "Daily Visitors", 
-      value: "1,248", 
-      change: "+12.5%", 
+      value: getCurrentVisitors(), 
+      change: getVisitorChange(), 
       icon: <Users className="h-5 w-5 text-blue-600" />,
-      positive: true 
+      positive: !getVisitorChange().startsWith('-') 
     },
     { 
-      title: "Monthly Total", 
-      value: "38.4K", 
-      change: "+5.2%", 
+      title: "Occupancy Rate", 
+      value: getLatestOccupancy(), 
+      change: getOccupancyChange(), 
       icon: <Calendar className="h-5 w-5 text-purple-600" />,
-      positive: true 
+      positive: !getOccupancyChange().startsWith('-') 
     },
     { 
       title: "Flight Arrivals", 
@@ -57,10 +137,10 @@ const StatsGrid = () => {
     },
     { 
       title: "Average Spend", 
-      value: "RM 980", 
-      change: "+8.7%", 
+      value: getLatestSpending(), 
+      change: getSpendingChange(), 
       icon: <CreditCard className="h-5 w-5 text-green-600" />,
-      positive: true 
+      positive: !getSpendingChange().startsWith('-') 
     },
   ];
 
