@@ -20,7 +20,7 @@ import SpendingChart from "@/components/SpendingChart";
 import AttractionMap from "@/components/AttractionMap";
 import StatsGrid from "@/components/StatsGrid";
 import { useQuery } from "@tanstack/react-query";
-import { getVisitorStats, getOriginCountries, getOccupancyRates, getAttractions } from "@/services/api";
+import { getVisitorStats, getOriginCountries, getOccupancyRates, getAttractions, getTouristSpending } from "@/services/api";
 
 const Index = () => {
   const [timeFilter, setTimeFilter] = useState<string>("6months");
@@ -397,7 +397,7 @@ const Index = () => {
                         {useQuery({
                           queryKey: ['originCountries'],
                           queryFn: getOriginCountries,
-                          select: (data) => data.slice(0, 5),
+                          select: (data) => data?.slice(0, 5) || [],
                         }).data?.map((country, index) => (
                           <div key={index} className="flex items-center justify-between">
                             <div className="flex items-center">
@@ -766,7 +766,8 @@ const Index = () => {
                         queryKey: ['touristSpending'],
                         queryFn: getTouristSpending,
                         select: (data) => {
-                          const spendingData = data.filter(item => item.category === 'Overall');
+                          if (!data) return "RM 0";
+                          const spendingData = Array.isArray(data) ? data.filter(item => item.category === 'Overall') : [];
                           if (spendingData.length === 0) return "RM 0";
                           const latest = spendingData[spendingData.length - 1];
                           return `RM ${latest.amount}`;
@@ -863,7 +864,7 @@ const Index = () => {
               {useQuery({
                 queryKey: ['attractions'],
                 queryFn: getAttractions,
-                select: (data) => data.slice(0, 6)
+                select: (data) => data?.slice(0, 6) || []
               }).data?.map((attraction, index) => (
                 <Card key={index}>
                   <CardHeader className="pb-2">
