@@ -51,6 +51,51 @@ export type Database = {
         }
         Relationships: []
       }
+      flight_arrivals: {
+        Row: {
+          airline_code: string | null
+          airline_name: string
+          created_at: string | null
+          date: string
+          estimated_time: string | null
+          flight_number: string
+          id: string
+          origin: string
+          scheduled_time: string
+          status: string
+          terminal: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          airline_code?: string | null
+          airline_name: string
+          created_at?: string | null
+          date: string
+          estimated_time?: string | null
+          flight_number: string
+          id?: string
+          origin: string
+          scheduled_time: string
+          status: string
+          terminal?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          airline_code?: string | null
+          airline_name?: string
+          created_at?: string | null
+          date?: string
+          estimated_time?: string | null
+          flight_number?: string
+          id?: string
+          origin?: string
+          scheduled_time?: string
+          status?: string
+          terminal?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       occupancy_rates: {
         Row: {
           created_at: string | null

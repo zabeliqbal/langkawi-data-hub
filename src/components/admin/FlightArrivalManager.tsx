@@ -214,7 +214,7 @@ const FlightArrivalManager = () => {
                     {columns.map((column) => (
                       <td key={`${flight.id || index}-${column.key}`} className="p-3">
                         {column.render 
-                          ? column.render(flight[column.key as keyof typeof flight], flight)
+                          ? column.render(flight[column.key as keyof typeof flight])
                           : flight[column.key as keyof typeof flight]?.toString()}
                       </td>
                     ))}
