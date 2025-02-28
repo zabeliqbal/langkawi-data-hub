@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFlightArrivals } from '@/services/api';
@@ -44,36 +45,92 @@ const FlightArrivalManager = () => {
         throw new Error('Failed to fetch live flight data');
       }
       
-      const data = await response.json();
-      console.log("API Response:", data); // Log the full response to see its structure
+      const rawData = await response.json();
+      console.log("Raw API Response:", rawData); // Log the raw response
       
-      // Check if the data exists and properly handle different response structures
-      let flightsData = [];
-      if (data && Array.isArray(data)) {
-        flightsData = data;
-      } else if (data && data.data && Array.isArray(data.data)) {
-        flightsData = data.data;
-      } else if (data && data.result && Array.isArray(data.result)) {
-        flightsData = data.result;
-      } else {
-        // If we can't find an array in the response, log it and throw an error
-        console.error("Unexpected API response structure:", data);
-        throw new Error('Unexpected API response structure');
+      // Extract flight data by examining the structure more thoroughly
+      let flightsData: any[] = [];
+      
+      // Try to find arrays at different levels of the response
+      if (Array.isArray(rawData)) {
+        flightsData = rawData;
+        console.log("Found flight data as top-level array");
+      } else if (typeof rawData === 'object' && rawData !== null) {
+        // Search for arrays in the first level properties
+        const possibleArrays = Object.entries(rawData)
+          .filter(([_, value]) => Array.isArray(value) && value.length > 0)
+          .map(([key, value]) => ({key, value}));
+        
+        console.log("Possible array properties:", possibleArrays.map(p => p.key));
+        
+        if (possibleArrays.length > 0) {
+          // If we find arrays, use the one that looks most like flight data
+          // Typically flight data would have properties like flight_number, origin, etc.
+          const likelyFlightData = possibleArrays.find(p => 
+            Array.isArray(p.value) && 
+            p.value.length > 0 && 
+            (p.value[0].flight_number || 
+             p.value[0].flightNumber || 
+             p.value[0].airline_name || 
+             p.value[0].origin)
+          );
+          
+          if (likelyFlightData) {
+            flightsData = likelyFlightData.value;
+            console.log(`Found flight data in '${likelyFlightData.key}' property`);
+          } else {
+            // If we couldn't identify flight data by key, just use the first array found
+            flightsData = possibleArrays[0].value;
+            console.log(`Using first array found in '${possibleArrays[0].key}' property`);
+          }
+        } else {
+          // If we still don't have flight data, log the keys to help debugging
+          console.log("No arrays found in the first level. Response keys:", Object.keys(rawData));
+          
+          // Try to look one level deeper for arrays
+          for (const [key, value] of Object.entries(rawData)) {
+            if (typeof value === 'object' && value !== null) {
+              for (const [nestedKey, nestedValue] of Object.entries(value)) {
+                if (Array.isArray(nestedValue) && nestedValue.length > 0) {
+                  flightsData = nestedValue;
+                  console.log(`Found flight data in nested property '${key}.${nestedKey}'`);
+                  break;
+                }
+              }
+              if (flightsData.length > 0) break;
+            }
+          }
+        }
       }
       
+      if (flightsData.length === 0) {
+        console.error("Could not locate flight data in the response:", rawData);
+        throw new Error('Could not locate flight data in the API response');
+      }
+      
+      console.log("Found flight data:", flightsData.slice(0, 2)); // Log first two items for debugging
+      
       // Transform the data to match our format
-      const transformedData = flightsData.map((flight: any, index: number) => ({
-        id: flight.id || `live-${flight.flight_number || index}-${Date.now()}`,
-        airline_code: flight.airline_code || '',
-        airline_name: flight.airline_name || '',
-        flight_number: flight.flight_number || '',
-        origin: flight.origin || '',
-        scheduled_time: flight.scheduled_time || '',
-        estimated_time: flight.estimated_time || '',
-        status: flight.status || 'SCH',
-        terminal: flight.terminal || '',
-        date: new Date().toISOString().split('T')[0],
-      }));
+      const transformedData = flightsData.map((flight: any, index: number) => {
+        // Try to extract flight info with various possible property names
+        const flightNumber = flight.flight_number || flight.flightNumber || flight.flight_id || `UNKNOWN-${index}`;
+        const airlineName = flight.airline_name || flight.airlineName || flight.airline || 'Unknown Airline';
+        
+        return {
+          id: flight.id || `live-${flightNumber}-${Date.now()}`,
+          airline_code: flight.airline_code || flight.airlineCode || '',
+          airline_name: airlineName,
+          flight_number: flightNumber,
+          origin: flight.origin || flight.from || flight.departure_airport || '',
+          scheduled_time: flight.scheduled_time || flight.scheduledTime || flight.std || '',
+          estimated_time: flight.estimated_time || flight.estimatedTime || flight.etd || '',
+          status: flight.status || 'SCH',
+          terminal: flight.terminal || '',
+          date: new Date().toISOString().split('T')[0],
+        };
+      });
+      
+      console.log("Transformed data:", transformedData.slice(0, 2)); // Log first two transformed items
       
       setTempFlightData(transformedData);
       
