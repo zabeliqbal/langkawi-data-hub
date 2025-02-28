@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFlightArrivals } from '@/services/api';
@@ -46,10 +45,25 @@ const FlightArrivalManager = () => {
       }
       
       const data = await response.json();
+      console.log("API Response:", data); // Log the full response to see its structure
+      
+      // Check if the data exists and properly handle different response structures
+      let flightsData = [];
+      if (data && Array.isArray(data)) {
+        flightsData = data;
+      } else if (data && data.data && Array.isArray(data.data)) {
+        flightsData = data.data;
+      } else if (data && data.result && Array.isArray(data.result)) {
+        flightsData = data.result;
+      } else {
+        // If we can't find an array in the response, log it and throw an error
+        console.error("Unexpected API response structure:", data);
+        throw new Error('Unexpected API response structure');
+      }
       
       // Transform the data to match our format
-      const transformedData = data.data.map((flight: any) => ({
-        id: flight.id || `live-${flight.flight_number}-${Date.now()}`,
+      const transformedData = flightsData.map((flight: any, index: number) => ({
+        id: flight.id || `live-${flight.flight_number || index}-${Date.now()}`,
         airline_code: flight.airline_code || '',
         airline_name: flight.airline_name || '',
         flight_number: flight.flight_number || '',
