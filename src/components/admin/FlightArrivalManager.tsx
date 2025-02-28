@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFlightArrivals } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Download, Upload } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,58 +25,17 @@ const FlightArrivalManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [tempFlightData, setTempFlightData] = useState<LiveFlightData[] | null>(null);
 
   const { data: flightArrivals, isLoading, error, refetch } = useQuery({
     queryKey: ['flightArrivals'],
     queryFn: getFlightArrivals
   });
 
-  const syncFlightData = async (flights: LiveFlightData[]) => {
-    try {
-      // First, remove existing records for today to avoid duplicates
-      const today = new Date().toISOString().split('T')[0];
-      const { error: deleteError } = await supabase
-        .from('flight_arrivals')
-        .delete()
-        .eq('date', today);
-
-      if (deleteError) throw deleteError;
-
-      // Insert new flight data
-      const { error: insertError } = await supabase
-        .from('flight_arrivals')
-        .insert(flights.map(flight => ({
-          flight_number: flight.flight_number,
-          airline_code: flight.airline_code,
-          airline_name: flight.airline_name,
-          origin: flight.origin,
-          scheduled_time: flight.scheduled_time,
-          estimated_time: flight.estimated_time,
-          status: flight.status,
-          terminal: flight.terminal,
-          date: flight.date
-        })));
-
-      if (insertError) throw insertError;
-
-      await queryClient.invalidateQueries({ queryKey: ['flightArrivals'] });
-      
-      toast({
-        title: 'Success',
-        description: `Successfully synced ${flights.length} flights to database`,
-      });
-    } catch (error) {
-      console.error('Error syncing flight data:', error);
-      toast({
-        title: 'Error',
-        description: `Failed to sync flight data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const fetchLiveFlightData = async () => {
-    setIsRefreshing(true);
+  const downloadFlightData = async () => {
+    setIsDownloading(true);
     try {
       const response = await fetch(
         'https://airports-prod-be.myairports.com.my/api/flights/search-flights?code=A&terminal=LGK&key=all&live=true&dayKey=0&value='
@@ -101,21 +60,119 @@ const FlightArrivalManager = () => {
         terminal: flight.terminal || '',
         date: new Date().toISOString().split('T')[0],
       }));
+      
+      setTempFlightData(transformedData);
+      
+      // Create a Blob containing the flight data
+      const blob = new Blob([JSON.stringify(transformedData, null, 2)], { type: 'application/json' });
+      
+      // Create a download link for the temporary file
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flight_data_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: 'Data Downloaded',
+        description: `Downloaded ${transformedData.length} flights to temporary file`,
+      });
+    } catch (error) {
+      console.error('Error downloading flight data:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to download flight data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
-      // Sync the transformed data with our database
-      await syncFlightData(transformedData);
+  const uploadFlightData = async () => {
+    if (!tempFlightData || tempFlightData.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'No flight data available to upload. Please download data first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    try {
+      // First, remove existing records for today to avoid duplicates
+      const today = new Date().toISOString().split('T')[0];
+      const { error: deleteError } = await supabase
+        .from('flight_arrivals')
+        .delete()
+        .eq('date', today);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new flight data
+      const { error: insertError } = await supabase
+        .from('flight_arrivals')
+        .insert(tempFlightData.map(flight => ({
+          flight_number: flight.flight_number,
+          airline_code: flight.airline_code,
+          airline_name: flight.airline_name,
+          origin: flight.origin,
+          scheduled_time: flight.scheduled_time,
+          estimated_time: flight.estimated_time,
+          status: flight.status,
+          terminal: flight.terminal,
+          date: flight.date
+        })));
+
+      if (insertError) throw insertError;
+
+      await queryClient.invalidateQueries({ queryKey: ['flightArrivals'] });
+      
+      toast({
+        title: 'Success',
+        description: `Successfully uploaded ${tempFlightData.length} flights to database`,
+      });
+      
+      // Clear the temporary data after successful upload
+      setTempFlightData(null);
+    } catch (error) {
+      console.error('Error uploading flight data:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to upload flight data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const fetchLiveFlightData = async () => {
+    setIsRefreshing(true);
+    try {
+      // First download the data
+      await downloadFlightData();
+      
+      // Then upload it to the database
+      if (tempFlightData && tempFlightData.length > 0) {
+        await uploadFlightData();
+      }
       
       await refetch();
       
       toast({
         title: 'Success',
-        description: `Fetched and synced ${transformedData.length} live flights`,
+        description: 'Flight data refreshed successfully',
       });
     } catch (error) {
-      console.error('Error fetching live flight data:', error);
+      console.error('Error refreshing flight data:', error);
       toast({
         title: 'Error',
-        description: `Failed to fetch live flight data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: `Failed to refresh flight data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: 'destructive',
       });
     } finally {
@@ -167,23 +224,46 @@ const FlightArrivalManager = () => {
               Live flight data from Langkawi International Airport (LGK)
             </CardDescription>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={fetchLiveFlightData}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh Data
-          </Button>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={downloadFlightData}
+              disabled={isDownloading}
+            >
+              <Download className={`h-4 w-4 mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
+              Download Data
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={uploadFlightData}
+              disabled={isUploading || !tempFlightData}
+            >
+              <Upload className={`h-4 w-4 mr-2 ${isUploading ? 'animate-spin' : ''}`} />
+              Upload to Database
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={fetchLiveFlightData}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh All
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading || isRefreshing ? (
+        {isLoading || isRefreshing || isDownloading || isUploading ? (
           <div className="py-10 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
             <p className="mt-2 text-muted-foreground">
-              {isRefreshing ? 'Fetching live flight data...' : 'Loading flight data...'}
+              {isRefreshing ? 'Refreshing flight data...' : 
+               isDownloading ? 'Downloading flight data...' :
+               isUploading ? 'Uploading flight data...' :
+               'Loading flight data...'}
             </p>
           </div>
         ) : error ? (
@@ -194,7 +274,7 @@ const FlightArrivalManager = () => {
         ) : !flightArrivals || flightArrivals.length === 0 ? (
           <div className="py-10 text-center text-muted-foreground">
             <p>No flight data available.</p>
-            <p>Click "Refresh Data" to fetch the latest flight information.</p>
+            <p>Click "Refresh All" to fetch the latest flight information.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -222,6 +302,17 @@ const FlightArrivalManager = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {tempFlightData && tempFlightData.length > 0 && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-yellow-700 font-medium">
+              Temporary data downloaded ({tempFlightData.length} flights)
+            </p>
+            <p className="text-sm text-yellow-600">
+              Click "Upload to Database" to save this data to the database.
+            </p>
           </div>
         )}
       </CardContent>
