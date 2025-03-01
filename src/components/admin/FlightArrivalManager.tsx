@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFlightArrivals } from '@/services/api';
@@ -114,14 +113,24 @@ const FlightArrivalManager = () => {
       const transformedData = flightsData.map((flight: any, index: number) => {
         // Try to extract flight info with various possible property names
         const flightNumber = flight.flight_number || flight.flightNumber || flight.flight_id || `UNKNOWN-${index}`;
-        const airlineName = flight.airline_name || flight.airlineName || flight.airline || 'Unknown Airline';
+        
+        // Fix airline name mapping - get it from the name property
+        const airlineName = flight.name || flight.airline_name || flight.airlineName || flight.airline || 'Unknown Airline';
+        
+        // Fix origin mapping - get it from origin.city if available
+        let originCity = '';
+        if (flight.origin && typeof flight.origin === 'object' && flight.origin.city) {
+          originCity = flight.origin.city;
+        } else {
+          originCity = flight.origin || flight.from || flight.departure_airport || '';
+        }
         
         return {
           id: flight.id || `live-${flightNumber}-${Date.now()}`,
           airline_code: flight.airline_code || flight.airlineCode || '',
           airline_name: airlineName,
           flight_number: flightNumber,
-          origin: flight.origin || flight.from || flight.departure_airport || '',
+          origin: originCity,
           scheduled_time: flight.scheduled_time || flight.scheduledTime || flight.std || '',
           estimated_time: flight.estimated_time || flight.estimatedTime || flight.etd || '',
           status: flight.status || 'SCH',
@@ -261,7 +270,6 @@ const FlightArrivalManager = () => {
     { key: 'airline_name', title: 'Airline' },
     { key: 'origin', title: 'Origin' },
     { key: 'scheduled_time', title: 'Scheduled Time' },
-    { key: 'estimated_time', title: 'Estimated Time' },
     { 
       key: 'status', 
       title: 'Status',
